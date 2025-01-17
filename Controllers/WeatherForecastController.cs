@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TwitchClips.Models;
 
 namespace TwitchClips.Controllers
 {

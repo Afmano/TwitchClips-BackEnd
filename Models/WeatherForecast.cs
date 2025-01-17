@@ -1,4 +1,4 @@
-namespace TwitchClips
+namespace TwitchClips.Models
 {
     public class WeatherForecast
     {

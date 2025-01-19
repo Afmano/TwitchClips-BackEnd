@@ -1,4 +1,4 @@
-﻿namespace TwitchClips.AppSettings
+﻿namespace TwitchClips.InternalLogic.AppSettings
 {
     public record AppInfo
     {

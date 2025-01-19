@@ -1,12 +1,16 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NReco.Logging.File;
-using TwitchClips.AppSettings;
 using TwitchClips.Contexts;
+using TwitchClips.InternalLogic;
+using TwitchClips.InternalLogic.AppSettings;
+using TwitchClips.InternalLogic.Localization;
+using TwitchClips.InternalLogic.Responses;
 
 var builder = WebApplication.CreateBuilder(args);
 IConfiguration appInfoSection = builder.Configuration.GetSection("AppInfo");
@@ -84,11 +88,24 @@ if (app.Environment.IsDevelopment())
                 .AllowCredentials()
             );
 }
-else
-{
-    app.UseHttpsRedirection();
-}
 
+app.UseHttpsRedirection();
+app.UseExceptionHandler(builder => builder.Run(async context =>
+{
+    Exception? exception = context.Features
+        ?.Get<IExceptionHandlerPathFeature>()
+        ?.Error;
+    app.Logger.LogError(exception, "Intercepted error.");
+    if (exception is ControllerException)
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsJsonAsync(new MessageResponse(exception.Message));
+    }
+    else
+    {
+        await context.Response.WriteAsJsonAsync(new MessageResponse(ResAnswers.ErrorRequest));
+    }
+}));
 app.UseAuthorization();
 app.MapControllers();
 app.Logger.LogInformation("App is starting...");

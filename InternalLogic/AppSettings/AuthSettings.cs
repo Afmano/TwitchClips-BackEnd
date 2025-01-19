@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace TwitchClips.AppSettings
+namespace TwitchClips.InternalLogic.AppSettings
 {
     public record AuthSettings
     {

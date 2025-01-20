@@ -27,8 +27,6 @@ namespace TwitchClips.Controllers.Parameters
                 DateType.Month => DateTime.UtcNow.AddMonths(-1),
                 DateType.Year => DateTime.UtcNow.AddYears(-1),
                 DateType.FiveYears => DateTime.UtcNow.AddYears(-5),
-                DateType.Decade => DateTime.UtcNow.AddYears(-10),
-                DateType.AllTime => DateTime.UtcNow,
                 _ => null
             };
         }

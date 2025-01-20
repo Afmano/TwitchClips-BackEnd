@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using AspNetCore.Swagger.Themes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NReco.Logging.File;
 using TwitchClips.Contexts;
-using TwitchClips.Controllers.Parameters;
 using TwitchClips.Controllers.Responses.General;
 using TwitchClips.InternalLogic;
 using TwitchClips.InternalLogic.AppSettings;
@@ -19,7 +19,6 @@ var builder = WebApplication.CreateBuilder(args);
 IConfiguration appInfoSection = builder.Configuration.GetSection("AppInfo");
 AppInfo appInfo = appInfoSection.Get<AppInfo>() ?? throw new NullReferenceException("Configure appsettings.json");
 builder.Services.Configure<AppInfo>(appInfoSection);
-builder.Services.AddControllers();
 builder.Services.AddCors();
 builder.Services.AddSwaggerGen(setup =>
 {
@@ -52,6 +51,7 @@ builder.Services.AddMvc().AddJsonOptions(conf =>
 {
     conf.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     conf.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    conf.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 builder.Services.AddLogging(conf =>
 {
@@ -60,24 +60,24 @@ builder.Services.AddLogging(conf =>
 });
 builder.Services.AddDbContext<MainDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("MainDb")));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer("Bearer", options =>
+{
+    options.Authority = appInfo.Host;
+    if (builder.Environment.IsDevelopment())
     {
-        options.Authority = appInfo.Host;
-        if (builder.Environment.IsDevelopment())
-        {
-            options.RequireHttpsMetadata = false;
-        }
+        options.RequireHttpsMetadata = false;
+    }
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
-            ValidIssuer = appInfo.Host,
-            ValidAudience = appInfo.AuthSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appInfo.AuthSettings.IssuerSigningKey))
-        };
-    });
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ValidIssuer = appInfo.Host,
+        ValidAudience = appInfo.AuthSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appInfo.AuthSettings.IssuerSigningKey))
+    };
+});
 TwitchAPI twitchAPI = new();
 twitchAPI.Settings.ClientId = appInfo.TwitchSettings.ClientId;
 twitchAPI.Settings.Secret = appInfo.TwitchSettings.ClientSecret;
@@ -88,13 +88,18 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(ModernStyle.Dark, options =>
+    {
+        options.EnableStickyOperations();
+        options.ShowBackToTopButton();
+        options.EnableExpandOrCollapseAllOperations();
+    });
     app.UseCors(builder => builder
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .SetIsOriginAllowed((host) => true)
-                .AllowCredentials()
-            );
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .SetIsOriginAllowed((host) => true)
+        .AllowCredentials()
+    );
 }
 
 app.UseHttpsRedirection();

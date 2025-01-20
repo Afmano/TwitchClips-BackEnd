@@ -7,10 +7,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NReco.Logging.File;
 using TwitchClips.Contexts;
+using TwitchClips.Controllers.Parameters;
+using TwitchClips.Controllers.Responses.General;
 using TwitchClips.InternalLogic;
 using TwitchClips.InternalLogic.AppSettings;
 using TwitchClips.InternalLogic.Localization;
-using TwitchClips.InternalLogic.Responses;
+using TwitchClips.Models.MapProfile;
+using TwitchLib.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 IConfiguration appInfoSection = builder.Configuration.GetSection("AppInfo");
@@ -45,10 +48,10 @@ builder.Services.AddSwaggerGen(setup =>
         }
     });
 });
-builder.Services.AddMvc().AddJsonOptions(o =>
+builder.Services.AddMvc().AddJsonOptions(conf =>
 {
-    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    conf.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    conf.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 builder.Services.AddLogging(conf =>
 {
@@ -75,6 +78,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appInfo.AuthSettings.IssuerSigningKey))
         };
     });
+TwitchAPI twitchAPI = new();
+twitchAPI.Settings.ClientId = appInfo.TwitchSettings.ClientId;
+twitchAPI.Settings.Secret = appInfo.TwitchSettings.ClientSecret;
+builder.Services.AddSingleton(twitchAPI);
+builder.Services.AddAutoMapper(typeof(ClipProfile));
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
@@ -96,14 +104,16 @@ app.UseExceptionHandler(builder => builder.Run(async context =>
         ?.Get<IExceptionHandlerPathFeature>()
         ?.Error;
     app.Logger.LogError(exception, "Intercepted error.");
-    if (exception is ControllerException)
+    switch (exception)
     {
-        context.Response.StatusCode = 400;
-        await context.Response.WriteAsJsonAsync(new MessageResponse(exception.Message));
-    }
-    else
-    {
-        await context.Response.WriteAsJsonAsync(new MessageResponse(ResAnswers.ErrorRequest));
+        case ControllerException:
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsJsonAsync(new MessageResponse(exception.Message));
+            break;
+
+        default:
+            await context.Response.WriteAsJsonAsync(new MessageResponse(ResAnswers.ErrorRequest));
+            break;
     }
 }));
 app.UseAuthorization();

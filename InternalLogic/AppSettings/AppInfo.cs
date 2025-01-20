@@ -6,5 +6,6 @@
         public required string Version { get; init; }
         public required string Host { get; init; }
         public required AuthSettings AuthSettings { get; init; }
+        public required TwitchSettings TwitchSettings { get; init; }
     }
 }

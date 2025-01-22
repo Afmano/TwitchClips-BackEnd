@@ -4,8 +4,8 @@ namespace TwitchClips.Controllers.Parameters
 {
     public class DateLimits
     {
-        public DateTime? StartDate;
-        public DateTime? EndDate;
+        public DateTime? StartDate { get; private set; }
+        public DateTime? EndDate { get; private set; }
 
         public DateLimits(DateTime? startDate, DateTime? endDate)
         {

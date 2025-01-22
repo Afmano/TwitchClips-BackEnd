@@ -11,15 +11,15 @@ namespace TwitchClips.Controllers
     [ApiController]
     public class ClipController(TwitchAPI twitchAPI, IMapper mapper) : ControllerBase
     {
-        ClipsGetter ClipsGetter { get; set; } = new(twitchAPI, mapper);
+        private readonly ClipsGetter _clipsGetter = new(twitchAPI, mapper);
 
         [HttpGet]
         public async Task<ActionResult> GetClipsByGame(string gameId, DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null) =>
-            Ok(await ClipsGetter.GetByGame(gameId, GenerateDateLimits(startDate, endDate, dateType)));
+            Ok(await _clipsGetter.GetByGame(gameId, GenerateDateLimits(startDate, endDate, dateType)));
 
         [HttpGet]
         public async Task<ActionResult> GetAllClipsByGame(string gameId, DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null) =>
-            Ok(await ClipsGetter.GetAllByGame(gameId, GenerateDateLimits(startDate, endDate, dateType)));
+            Ok(await _clipsGetter.GetAllByGame(gameId, GenerateDateLimits(startDate, endDate, dateType)));
 
         private static DateLimits? GenerateDateLimits(DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null)
         {

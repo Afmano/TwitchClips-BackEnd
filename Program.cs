@@ -7,11 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NReco.Logging.File;
-using TwitchClips.Contexts;
 using TwitchClips.Controllers.Responses.General;
 using TwitchClips.InternalLogic;
 using TwitchClips.InternalLogic.AppSettings;
+using TwitchClips.InternalLogic.Contexts;
 using TwitchClips.InternalLogic.Localization;
+using TwitchClips.InternalLogic.Services;
 using TwitchClips.Models.MapProfile;
 using TwitchLib.Api;
 
@@ -83,6 +84,7 @@ twitchAPI.Settings.ClientId = appInfo.TwitchSettings.ClientId;
 twitchAPI.Settings.Secret = appInfo.TwitchSettings.ClientSecret;
 builder.Services.AddSingleton(twitchAPI);
 builder.Services.AddAutoMapper(typeof(ClipProfile));
+builder.Services.AddHostedService<ClipsUpdateService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())

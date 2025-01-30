@@ -18,7 +18,7 @@ namespace TwitchClips.Models
         public required string Language { get; set; }
         public required string Title { get; set; }
         public int ViewCount { get; set; }
-        public required string CreatedAt { get; init; }
+        public required DateTime CreatedAt { get; init; }
         public required string ThumbnailUrl { get; set; }
         public float Duration { get; set; }
     }

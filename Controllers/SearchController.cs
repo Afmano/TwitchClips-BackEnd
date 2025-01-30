@@ -7,8 +7,7 @@ using TwitchLib.Api.Helix.Models.Search;
 
 namespace TwitchClips.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    [ApiController, Route("api/[controller]")]
     public class SearchController(TwitchAPI twitchAPI) : ControllerBase
     {
         [HttpGet]

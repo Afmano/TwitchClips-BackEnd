@@ -7,8 +7,7 @@ using TwitchLib.Api;
 
 namespace TwitchClips.Controllers
 {
-    [Route("api/[controller]/[action]")]
-    [ApiController]
+    [ApiController, Route("api/[controller]/[action]")]
     public class ClipController(TwitchAPI twitchAPI, IMapper mapper) : ControllerBase
     {
         private readonly ClipsGetter _clipsGetter = new(twitchAPI, mapper);

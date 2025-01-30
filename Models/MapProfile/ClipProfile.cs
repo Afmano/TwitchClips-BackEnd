@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Globalization;
+using AutoMapper;
 using TwitchLib.Api.Helix.Models.Clips.GetClips;
 
 namespace TwitchClips.Models.MapProfile

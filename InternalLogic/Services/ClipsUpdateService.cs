@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using EFCore.BulkExtensions;
+using TwitchClips.Controllers.Parameters;
+using TwitchClips.Controllers.Parameters.Enums;
 using TwitchClips.InternalLogic.Contexts;
 using TwitchClips.InternalLogic.Testing;
 using TwitchClips.Models;
@@ -8,19 +10,29 @@ using TwitchLib.Api.Helix.Models.Games;
 
 namespace TwitchClips.InternalLogic.Services
 {
-    public class ClipsUpdateService(ILogger<ClipsUpdateService> logger, TwitchAPI twitchAPI, IMapper mapper, IServiceScopeFactory scopeFactory) : IHostedService, IDisposable
+    public class ClipsUpdateService(ILogger<ClipsUpdateService> logger, TwitchAPI twitchAPI, IMapper mapper,
+        IServiceScopeFactory scopeFactory) : IHostedService, IDisposable
     {
         private readonly ClipsGetter _clipsGetter = new(twitchAPI, mapper);
+
+        #region Testing values
+
         private const int TopGameCount = 5;
+        private const long StartAfterMins = 30;
         private const long HoursPeriod = 6;
-        private readonly TimeSpan _timePeriod = TimeSpan.FromHours(HoursPeriod);
+        private readonly DateLimits _dateLimits = new(DateType.AllTime);
+
+        #endregion Testing values
+
+        private readonly TimeSpan _startAfterTime = TimeSpan.FromMinutes(StartAfterMins);
+        private readonly TimeSpan _executionPeriodTime = TimeSpan.FromHours(HoursPeriod);
         private int _executionCount = 0;
         private Timer? _timer;
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
             logger.LogInformation("Clips Update service started.");
-            _timer = new Timer(Update, null, TimeSpan.Zero, _timePeriod);
+            _timer = new Timer(Update, null, _startAfterTime, _executionPeriodTime);
             return Task.CompletedTask;
         }
 
@@ -37,9 +49,10 @@ namespace TwitchClips.InternalLogic.Services
             List<SavedClip> clips = [];
             using (var watch = new ExecuteStopwatch(logger, "1k games clips"))
             {
-                var tasks = topGames.Select(async game => await _clipsGetter.GetAllByGame(game.Id));
+                var tasks = topGames.Select(async game => await _clipsGetter.GetAllByGame(game.Id, _dateLimits));
                 var res = await Task.WhenAll(tasks);
-                clips = [.. res.SelectMany(list => list).OrderByDescending(clip => clip.ViewCount)];
+                clips = [.. res.SelectMany(list => list).OrderByDescending(clip => clip.ViewCount)
+                    .DistinctBy(clip => clip.Id)];
             }
 
             logger.LogInformation("Clips received: {Count}", clips.Count);

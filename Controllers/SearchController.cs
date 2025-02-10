@@ -11,7 +11,7 @@ namespace TwitchClips.Controllers
     public class SearchController(TwitchAPI twitchAPI) : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult> Search(string searchValue, SearchFlags searchType = SearchFlags.All)
+        public async Task<ActionResult<SearchResponse>> Search(string searchValue, SearchFlags searchType = SearchFlags.All)
         {
             List<Channel>? channels = [];
             List<Game>? games = [];

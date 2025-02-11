@@ -9,7 +9,7 @@ using TwitchClips.Models;
 namespace TwitchClips.Controllers
 {
     [ApiController, Route("api/[controller]")]
-    public class SavedClipController(MainDbContext dbContext) : Controller
+    public class SavedClipController(MainDbContext dbContext) : ControllerBase
     {
         [HttpGet]
         public ActionResult<IOrderedQueryable<SavedClip>> Get(int pageIndex = 0, int pageSize = 100,

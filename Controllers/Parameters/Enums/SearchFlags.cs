@@ -4,7 +4,7 @@
     public enum SearchFlags
     {
         Channel = 1,
-        Category = 2,
-        All = Channel | Category
+        Game = 2,
+        All = Channel | Game
     }
 }

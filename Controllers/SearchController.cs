@@ -21,10 +21,10 @@ namespace TwitchClips.Controllers
                 channels = [.. channelsRes.Channels];
             }
 
-            if (searchType.HasFlag(SearchFlags.Category))
+            if (searchType.HasFlag(SearchFlags.Game))
             {
-                var categoriesRes = await twitchAPI.Helix.Search.SearchCategoriesAsync(searchValue);
-                games = [.. categoriesRes.Games];
+                var gamesRes = await twitchAPI.Helix.Search.SearchCategoriesAsync(searchValue);
+                games = [.. gamesRes.Games];
             }
 
             return Ok(new SearchResponse(channels, games));

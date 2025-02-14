@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TwitchClips.Controllers.Parameters;
 using TwitchClips.Controllers.Parameters.Enums;
-using TwitchClips.InternalLogic;
+using TwitchClips.InternalLogic.Twitch;
+using TwitchClips.InternalLogic.Twitch.Parameters;
 using TwitchClips.Models;
 using TwitchLib.Api;
 
@@ -15,11 +16,11 @@ namespace TwitchClips.Controllers
 
         [HttpGet]
         public async Task<ActionResult<List<SavedClip>>> GetClipsByGame(string gameId, DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null) =>
-            Ok(await _clipsGetter.GetByGame(gameId, GenerateDateLimits(startDate, endDate, dateType)));
+            Ok(await _clipsGetter.GetById(gameId, ClipSource.Game, GenerateDateLimits(startDate, endDate, dateType)));
 
         [HttpGet]
         public async Task<ActionResult<List<SavedClip>>> GetAllClipsByGame(string gameId, DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null) =>
-            Ok(await _clipsGetter.GetAllByGame(gameId, GenerateDateLimits(startDate, endDate, dateType)));
+            Ok(await _clipsGetter.GetAllById(gameId, ClipSource.Game, GenerateDateLimits(startDate, endDate, dateType)));
 
         private static DateLimits? GenerateDateLimits(DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null)
         {

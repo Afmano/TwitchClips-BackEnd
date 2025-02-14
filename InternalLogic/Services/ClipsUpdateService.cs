@@ -4,6 +4,8 @@ using TwitchClips.Controllers.Parameters;
 using TwitchClips.Controllers.Parameters.Enums;
 using TwitchClips.InternalLogic.Contexts;
 using TwitchClips.InternalLogic.Testing;
+using TwitchClips.InternalLogic.Twitch;
+using TwitchClips.InternalLogic.Twitch.Parameters;
 using TwitchClips.Models;
 using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Games;
@@ -14,6 +16,7 @@ namespace TwitchClips.InternalLogic.Services
         IServiceScopeFactory scopeFactory) : IHostedService, IDisposable
     {
         private readonly ClipsGetter _clipsGetter = new(twitchAPI, mapper);
+        private readonly GameGetter _gameGetter = new(twitchAPI);
 
         #region Testing values
 
@@ -43,13 +46,13 @@ namespace TwitchClips.InternalLogic.Services
             List<Game> topGames;
             using (var watch = new ExecuteStopwatch(logger, "TopGames"))
             {
-                topGames = await _clipsGetter.GetTopGames(TopGameCount);
+                topGames = await _gameGetter.GetTopGames(TopGameCount);
             }
 
             List<SavedClip> clips = [];
             using (var watch = new ExecuteStopwatch(logger, "1k games clips"))
             {
-                var tasks = topGames.Select(async game => await _clipsGetter.GetAllByGame(game.Id, _dateLimits));
+                var tasks = topGames.Select(async game => await _clipsGetter.GetAllById(game.Id, ClipSource.Game, _dateLimits));
                 var res = await Task.WhenAll(tasks);
                 clips = [.. res.SelectMany(list => list).OrderByDescending(clip => clip.ViewCount)
                     .DistinctBy(clip => clip.Id)];

@@ -15,12 +15,12 @@ namespace TwitchClips.Controllers
         private readonly ClipsGetter _clipsGetter = new(twitchAPI, mapper);
 
         [HttpGet]
-        public async Task<ActionResult<List<SavedClip>>> GetClipsByGame(string gameId, DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null) =>
-            Ok(await _clipsGetter.GetById(gameId, ClipSource.Game, GenerateDateLimits(startDate, endDate, dateType)));
+        public async Task<ActionResult<List<SavedClip>>> GetClips(string id, ClipSource clipSource, DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null) =>
+            Ok(await _clipsGetter.Get(id, clipSource, GenerateDateLimits(startDate, endDate, dateType)));
 
         [HttpGet]
-        public async Task<ActionResult<List<SavedClip>>> GetAllClipsByGame(string gameId, DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null) =>
-            Ok(await _clipsGetter.GetAllById(gameId, ClipSource.Game, GenerateDateLimits(startDate, endDate, dateType)));
+        public async Task<ActionResult<List<SavedClip>>> GetMaxClips(string id, ClipSource clipSource, DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null) =>
+            Ok(await _clipsGetter.GetMax(id, clipSource, GenerateDateLimits(startDate, endDate, dateType)));
 
         private static DateLimits? GenerateDateLimits(DateTime? startDate = null, DateTime? endDate = null, DateType? dateType = null)
         {

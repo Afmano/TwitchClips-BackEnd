@@ -12,13 +12,13 @@ namespace TwitchClips.InternalLogic.Twitch
         private static int TotalPerRequest => RequestValues.TotalPerRequest;
         private static int TotalLimit => RequestValues.TotalLimit;
 
-        public async Task<List<SavedClip>> GetById(string id, ClipSource clipSource, DateLimits? dateLimits = null)
+        public async Task<List<SavedClip>> Get(string id, ClipSource clipSource, DateLimits? dateLimits = null)
         {
             var getClipsResponse = await GetClips(id, clipSource, dateLimits);
             return mapper.Map<List<SavedClip>>(getClipsResponse.Clips);
         }
 
-        public async Task<List<SavedClip>> GetAllById(string id, ClipSource clipSource, DateLimits? dateLimits = null)
+        public async Task<List<SavedClip>> GetMax(string id, ClipSource clipSource, DateLimits? dateLimits = null)
         {
             List<Clip> allClips = [];
             string? currentPaginationCursor = null;
@@ -38,7 +38,7 @@ namespace TwitchClips.InternalLogic.Twitch
             {
                 ClipSource.Channel => await twitchAPI.Helix.Clips.GetClipsAsync(broadcasterId: id, first: TotalPerRequest, startedAt: dateLimits?.StartDate, endedAt: dateLimits?.EndDate, after: pagination),
                 ClipSource.Game => await twitchAPI.Helix.Clips.GetClipsAsync(gameId: id, first: TotalPerRequest, startedAt: dateLimits?.StartDate, endedAt: dateLimits?.EndDate, after: pagination),
-                _ => throw new ArgumentException(),
+                _ => throw new ArgumentException("Invalid clip source", nameof(clipSource)),
             };
         }
     }

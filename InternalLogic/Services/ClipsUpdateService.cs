@@ -52,7 +52,7 @@ namespace TwitchClips.InternalLogic.Services
             List<SavedClip> clips = [];
             using (var watch = new ExecuteStopwatch(logger, "1k games clips"))
             {
-                var tasks = topGames.Select(async game => await _clipsGetter.GetAllById(game.Id, ClipSource.Game, _dateLimits));
+                var tasks = topGames.Select(async game => await _clipsGetter.GetMax(game.Id, ClipSource.Game, _dateLimits));
                 var res = await Task.WhenAll(tasks);
                 clips = [.. res.SelectMany(list => list).OrderByDescending(clip => clip.ViewCount)
                     .DistinctBy(clip => clip.Id)];
